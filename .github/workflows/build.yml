@@ -48,6 +48,7 @@ jobs:
           asset_path: ./linux.zip
           asset_name: linux.zip
           asset_content_type: application/zip
+
   build-mac:
     permissions: write-all
     runs-on: macos-latest
@@ -89,4 +90,47 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./mac.zip
           asset_name: mac.zip
+          asset_content_type: application/zip
+
+  build-windows:
+    permissions: write-all
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Package
+        run: npm run package
+
+      - name: Compress artifact
+        run: cd out && zip -r ../windows.zip electron-multi-os-ci-win32-x64
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: windows-v${{ github.run_number }}
+          release_name: Release WINDOWS ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload_release_asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./windows.zip
+          asset_name: windows.zip
           asset_content_type: application/zip
