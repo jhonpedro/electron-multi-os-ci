@@ -24,30 +24,30 @@ jobs:
       - name: Package
         run: npm run package
 
-      - name: Generated
-        run: cd out && ls -la
+      - name: Compress artifact
+        run: cd out && zip -r ../linux.zip electron-multi-os-ci-linux-x64
 
-      # - name: Create Release
-      #   id: create_release
-      #   uses: actions/create-release@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     tag_name: v${{ github.run_number }}
-      #     release_name: Release ${{ github.run_number }}
-      #     draft: false
-      #     prerelease: false
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
 
-      # - name: Upload Release Asset
-      #   id: upload_release_asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./path/to/your/package.zip
-      #     asset_name: package.zip
-      #     asset_content_type: application/zip
+      - name: Upload Release Asset
+        id: upload_release_asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./linux.zip
+          asset_name: linux.zip
+          asset_content_type: application/zip
   build-mac:
     runs-on: macos-latest
 
