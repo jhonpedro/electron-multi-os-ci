@@ -33,7 +33,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
+          tag_name: linux-v${{ github.run_number }}
           release_name: Release LINUX ${{ github.run_number }}
           draft: false
           prerelease: false
@@ -75,7 +75,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
+          tag_name: mac-v${{ github.run_number }}
           release_name: Release MAC ${{ github.run_number }}
           draft: false
           prerelease: false
