@@ -1,4 +1,4 @@
-name: Build and Publish
+name: Build and Release
 
 on:
   push:
@@ -6,8 +6,28 @@ on:
       - main
 
 jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+
   build-linux:
     permissions: write-all
+    needs: create-release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,30 +47,20 @@ jobs:
       - name: Compress artifact
         run: cd out && zip -r ../linux.zip electron-multi-os-ci-linux-x64
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: linux-v${{ github.run_number }}
-          release_name: Release LINUX ${{ github.run_number }}
-          draft: false
-          prerelease: false
-
       - name: Upload Release Asset
-        id: upload_release_asset
+        id: upload_linux_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ./linux.zip
           asset_name: linux.zip
           asset_content_type: application/zip
 
   build-mac:
     permissions: write-all
+    needs: create-release
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -68,32 +78,22 @@ jobs:
         run: npm run package
 
       - name: Compress artifact
-        run: cd out && zip -r ../mac.zip electron-multi-os-ci-darwin-arm64
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: mac-v${{ github.run_number }}
-          release_name: Release MAC ${{ github.run_number }}
-          draft: false
-          prerelease: false
+        run: cd out && zip -r ../mac.zip electron-multi-os-ci-mac-x64
 
       - name: Upload Release Asset
-        id: upload_release_asset
+        id: upload_mac_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ./mac.zip
           asset_name: mac.zip
           asset_content_type: application/zip
 
   build-windows:
     permissions: write-all
+    needs: create-release
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -111,26 +111,15 @@ jobs:
         run: npm run package
 
       - name: Compress artifact
-        run: cd out && tar.exe -a -c -f ../windows.zip electron-multi-os-ci-win32-x64
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: windows-v${{ github.run_number }}
-          release_name: Release WINDOWS ${{ github.run_number }}
-          draft: false
-          prerelease: false
+        run: cd out && zip -r ../windows.zip electron-multi-os-ci-windows-x64
 
       - name: Upload Release Asset
-        id: upload_release_asset
+        id: upload_windows_asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           asset_path: ./windows.zip
           asset_name: windows.zip
           asset_content_type: application/zip
