@@ -79,7 +79,7 @@ jobs:
         run: npm run package
 
       - name: Compress artifact
-        run: cd out && zip -r ../mac.zip electron-multi-os-ci-mac-x64
+        run: cd out && zip -r ../mac.zip electron-multi-os-ci-darwin-arm64
 
       - name: Upload Release Asset
         id: upload_mac_asset
@@ -112,7 +112,7 @@ jobs:
         run: npm run package
 
       - name: Compress artifact
-        run: cd out && zip -r ../windows.zip electron-multi-os-ci-windows-x64
+        run: cd out && tar.exe -a -c -f ../windows.zip electron-multi-os-ci-win32-x64
 
       - name: Upload Release Asset
         id: upload_windows_asset
